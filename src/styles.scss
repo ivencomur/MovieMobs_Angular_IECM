@@ -1,0 +1,29 @@
+@use '@angular/material' as mat;
+
+html {
+  color-scheme: light dark;
+  @include mat.theme((
+    color: (
+      primary: mat.$cyan-palette,
+      secondary: mat.$orange-palette
+    ),
+    typography: Roboto,
+    density: 0
+  ));
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, sans-serif;
+  height: 100vh;
+}
+
+.success-snackbar {
+  background-color: var(--mat-sys-primary) !important;
+  color: var(--mat-sys-on-primary) !important;
+}
+
+.error-snackbar {
+  background-color: var(--mat-sys-error) !important;
+  color: var(--mat-sys-on-error) !important;
+}
