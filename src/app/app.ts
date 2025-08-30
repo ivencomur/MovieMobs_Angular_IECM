@@ -1,11 +1,12 @@
 import { Component, signal } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
-  protected readonly title = signal('MovieMobsAngular');
+  protected readonly title = signal('MovieMobs_Angular_IECM');
 }

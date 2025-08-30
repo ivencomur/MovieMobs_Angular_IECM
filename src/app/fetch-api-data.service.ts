@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { catchError } from 'rxjs/operators';
-import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 
 const apiUrl = 'https://iecm-movies-app-6966360ed90e.herokuapp.com/';
 
@@ -11,25 +10,59 @@ const apiUrl = 'https://iecm-movies-app-6966360ed90e.herokuapp.com/';
 })
 export class FetchApiDataService {
   constructor(private http: HttpClient) { }
-  public userRegistration(userDetails: any): Observable<any> { return this.http.post(apiUrl + 'users', userDetails).pipe(catchError(this.handleError)); }
-  public userLogin(userDetails: any): Observable<any> { return this.http.post(apiUrl + 'login', userDetails).pipe(catchError(this.handleError)); }
-  public getAllMovies(): Observable<any> { const token = localStorage.getItem('token'); return this.http.get(apiUrl + 'movies', { headers: new HttpHeaders({ Authorization: 'Bearer ' + token }) }).pipe(map(this.extractResponseData), catchError(this.handleError)); }
-  public getUser(username: string): Observable<any> { const token = localStorage.getItem('token'); return this.http.get(apiUrl + 'users/' + username, { headers: new HttpHeaders({ Authorization: 'Bearer ' + token }) }).pipe(map(this.extractResponseData), catchError(this.handleError)); }
-  public addFavoriteMovie(username: string, movieId: string): Observable<any> { const token = localStorage.getItem('token'); return this.http.post(apiUrl + 'users/' + username + '/favorites/' + movieId, {}, { headers: new HttpHeaders({ Authorization: 'Bearer ' + token }) }).pipe(map(this.extractResponseData), catchError(this.handleError)); }
-  public editUser(username: string, updatedUser: any): Observable<any> { const token = localStorage.getItem('token'); return this.http.put(apiUrl + 'users/' + username, updatedUser, { headers: new HttpHeaders({ Authorization: 'Bearer ' + token }) }).pipe(map(this.extractResponseData), catchError(this.handleError)); }
-  public deleteUser(username: string): Observable<any> { const token = localStorage.getItem('token'); return this.http.delete(apiUrl + 'users/' + username, { headers: new HttpHeaders({ Authorization: 'Bearer ' + token }) }).pipe(map(this.extractResponseData), catchError(this.handleError)); }
-  public deleteFavoriteMovie(username: string, movieId: string): Observable<any> { const token = localStorage.getItem('token'); return this.http.delete(apiUrl + 'users/' + username + '/favorites/' + movieId, { headers: new HttpHeaders({ Authorization: 'Bearer ' + token }) }).pipe(map(this.extractResponseData), catchError(this.handleError)); }
-  private extractResponseData(res: any): any { const body = res; return body || {}; }
+
+  userRegistration(userDetails: any): Observable<any> {
+    // Format the data to match the API expectations
+    const formattedData = {
+      username: userDetails.Username,
+      password: userDetails.Password,
+      email: userDetails.Email,
+      ...(userDetails.Birthday && { birthday: userDetails.Birthday })
+    };
+    
+    return this.http.post(apiUrl + 'users', formattedData).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  userLogin(userDetails: any): Observable<any> {
+    // Format the data to match the API expectations
+    const formattedData = {
+      username: userDetails.Username,
+      password: userDetails.Password
+    };
+    
+    return this.http.post(apiUrl + 'login', formattedData).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(error: HttpErrorResponse): any {
-    if (error.error.errors) {
-      const errorMessages = error.error.errors.map((err: any) => err.msg).join(', ');
-      return throwError(() => new Error(errorMessages || 'Something bad happened; please try again later.'));
-    }
+    let errorMessage = 'An unexpected error occurred; please try again later.';
+    
     if (error.error instanceof ErrorEvent) {
-      console.error('An error occurred:', error.error.message);
+      // Client-side error
+      errorMessage = `Error: ${error.error.message}`;
     } else {
-      console.error(`Backend returned code ${error.status}, body was: `, error.error);
+      // Server-side error
+      switch (error.status) {
+        case 400:
+          errorMessage = 'Invalid data provided. Please check your input.';
+          break;
+        case 401:
+          errorMessage = 'Invalid username or password.';
+          break;
+        case 409:
+          errorMessage = 'Username already exists. Please choose a different username.';
+          break;
+        case 500:
+          errorMessage = 'Server error. Please try again later.';
+          break;
+        default:
+          errorMessage = error.error?.message || `Error: ${error.status}`;
+      }
     }
-    return throwError(() => new Error(error.error.message || error.error || 'Something bad happened; please try again later.'));
+    
+    return throwError(() => new Error(errorMessage));
   }
 }

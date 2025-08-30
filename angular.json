@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "MovieMobsAngular": {
+    "MovieMobs_Angular_IECM": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -64,10 +64,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "MovieMobsAngular:build:production"
+              "buildTarget": "MovieMobs_Angular_IECM:build:production"
             },
             "development": {
-              "buildTarget": "MovieMobsAngular:build:development"
+              "buildTarget": "MovieMobs_Angular_IECM:build:development"
             }
           },
           "defaultConfiguration": "development"
